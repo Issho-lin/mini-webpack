@@ -1,0 +1,6 @@
+# dependencies  npm包文件
+/pack/node_modules
+/demo/node_modules
+
+# production  打包文件
+/demo/build
