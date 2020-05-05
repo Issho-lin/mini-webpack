@@ -10,7 +10,12 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        use: './loaders/mini-loader.js'
+        use: {
+          loader: './loaders/mini-loader.js',
+          options: {
+            name: '吴彤'
+          }
+        }
       }
     ]
   },
