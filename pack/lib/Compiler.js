@@ -13,6 +13,8 @@ module.exports = class Compiler {
     this.root = process.cwd()
     // 初始化一个空对象，存放所有的模块
     this.modules = {}
+    // loader配置
+    this.rules = config.module.rules
   }
   start() {
     // 打包逻辑
@@ -23,7 +25,37 @@ module.exports = class Compiler {
   }
   depAnalyse(modulePath) {
     // 读取模块内容
-    const source = this.getSource(modulePath)
+    let source = this.getSource(modulePath)
+
+    // 执行loader
+    const executeLoader = (use, obj) => {
+      const loader = require(path.join(this.root, use))
+      source = loader.call(obj, source)
+    }
+
+    // 读取rules规则，倒序迭代，因为loader作用的优先级是倒序的
+    for (let i = this.rules.length - 1; i >= 0; i--) {
+      // 获取每一条规则
+      const { test, use } = this.rules[i]
+      // 与modulePath进行匹配
+      if (test.test(modulePath)) {
+        // 如果use是字符串
+        if (typeof use === 'string') {
+          executeLoader(use)
+        }
+        // 如果use是数组
+        if (Array.isArray(use)) {
+          for (let k = use.length - 1; k >= 0; k--) {
+            executeLoader(use[k])
+          }
+        }
+        // 如果use是对象
+        if (use instanceof Object) {
+          executeLoader(use.loader, { query: use.options })
+        }
+      }
+    }
+
     // 准备一个依赖数组，用来存储当前模块的所有依赖
     let dependencies = []
     // 替换require

@@ -8,6 +8,14 @@ module.exports = {
   },
   module: {
     rules: [
+      // {
+      //   test: /\.js$/,
+      //   use: './loaders/mini-loader.js'
+      // },
+      // {
+      //   test: /\.js$/,
+      //   use: ['./loaders/mini-loader.js']
+      // },
       {
         test: /\.js$/,
         use: {
