@@ -4,6 +4,7 @@ const parser = require('@babel/parser')
 const traverse = require('@babel/traverse').default
 const genarator = require('@babel/generator').default
 const ejs = require('ejs')
+const { SyncHook } = require('tapable')
 
 module.exports = class Compiler {
   constructor(config) {
@@ -15,13 +16,35 @@ module.exports = class Compiler {
     this.modules = {}
     // loader配置
     this.rules = config.module.rules
+    // 定义钩子
+    this.hooks = {
+      compile: new SyncHook(),
+      afterCompile: new SyncHook(),
+      emit: new SyncHook(),
+      afterEmit: new SyncHook(),
+      done: new SyncHook()
+    }
+    // 获取插件对象，调用apply方法(定义了hook才能调用)
+    if (Array.isArray(this.config.plugins)) {
+      this.config.plugins.forEach(item => item.apply(this))
+    }
   }
   start() {
     // 打包逻辑
+    // 开始编译
+    this.hooks.compile.call()
     // 1. 依赖分析
     this.depAnalyse(path.resolve(this.root, this.entry))
+    // 编译完成
+    this.hooks.afterCompile.call()
     // console.log(this.modules)
+    // 开始文件发射
+    this.hooks.emit.call()
+    // 文件发射完成
+    this.hooks.afterEmit.call()
     this.emitFile()
+    // 打包完成
+    this.hooks.done.call()
   }
   depAnalyse(modulePath) {
     // 读取模块内容
