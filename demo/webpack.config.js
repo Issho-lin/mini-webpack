@@ -1,4 +1,5 @@
 const path = require('path')
+const HelloWorldPlugin = require('./plugins/HelloWorldPlugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -27,5 +28,8 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    new HelloWorldPlugin()
+  ],
   mode: 'development'
 }
